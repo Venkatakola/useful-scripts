@@ -6,7 +6,7 @@
 # Error from server (Conflict): Operation cannot be fulfilled on namespaces "<namespace>": The system is ensuring all content is removed from this namespace. Upon completion, this namespace will automatically be purged by the system.
 #
 ####### </ Jeffery Bagirimvano >
-
+set -x
 while getopts n:u:t:h--help: option; do
   case "${option}" in
     n) NS_LIST=${OPTARG};;
@@ -42,7 +42,6 @@ Examples:
 done
 
 NAMESPACE_LIST="${NS_LIST}"
-OC_TOKEN="${TOKEN:-$(oc whoami -t)}"
 OC_REST_API_URL="${REST_API_URL:-$(oc whoami --show-server)}"
 
 if [ ! -z "$NAMESPACE_LIST" ]; then
@@ -51,7 +50,8 @@ if [ ! -z "$NAMESPACE_LIST" ]; then
     echo "Working on deleting ${namespace}"
     oc get ns ${namespace} -o json > delete-${namespace}-project.json
     sed -i '/"kubernetes"/d' delete-${namespace}-project.json
-    curl --silent --insecure -H "Content-Type: application/json" -H "Authorization: Bearer ${OC_TOKEN}" -X PUT --data-binary @delete-${namespace}-project.json ${OC_REST_API_URL}/api/v1/namespaces/${namespace}/finalize
+    _maybeAuthHeader=$([ -z ${TOKEN} ] && echo "" || echo "-H \"Authorization: Bearer ${TOKEN}\"")
+    curl --silent --insecure -H "Content-Type: application/json" $_maybeAuthHeader -X PUT --data-binary @delete-${namespace}-project.json ${OC_REST_API_URL}/api/v1/namespaces/${namespace}/finalize
     rm -f delete-${namespace}-project.json
   done
   echo
