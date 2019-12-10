@@ -6,7 +6,7 @@
 # Error from server (Conflict): Operation cannot be fulfilled on namespaces "<namespace>": The system is ensuring all content is removed from this namespace. Upon completion, this namespace will automatically be purged by the system.
 #
 ####### </ Jeffery Bagirimvano >
-set -x
+
 while getopts n:u:t:h--help: option; do
   case "${option}" in
     n) NS_LIST=${OPTARG};;
